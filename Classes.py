@@ -297,15 +297,19 @@ class MakeFile():
                 ws.ignore_errors({'number_stored_as_text': 'A1:XFD1048576'})
                 myws = Worksheet(ws)
                 self.wsheets.append(myws)
-            # Update the names of the workbook sheets in ToCitem class and the format dict
+            # Update the names of the workbook sheets in ToCitem class and the format dict, the row_ind and the rows
             ToCitem.sheets = self.wsheetnames
             ToCitem.formats = formats
+            ToCitem.row_ind = 1
+            ToCitem.toc_rows = []
             # Write sheet titles for any of 'counts', 'percentages', 'stats'
             title_line = transformed_input_files[0]
             for ws_name, title in title_line:
                 myws = self.get_ws(ws_name)
                 myws.write_range(Range((0, 1 * self.DESC_COL), f'HRH TABLES\n{title[0]}',formats[9]))
                 myws.current_row += 2
+            # Initialize table counter
+            Table.counter = 0
             # Write worksheet tables and make ToCitems
             table_lines = transformed_input_files[1:]
             for i, line in enumerate(table_lines):
@@ -326,8 +330,8 @@ class MakeFile():
             # Write ToCitems
             mytocws = Worksheet(wb.add_worksheet('TableOfContents'))
             mytocws.write_ranges(ToCitem.make_ranges())
-            # Update last column to ToC sheet
-            mytocws.last_col = len(toc.headers)
+            # # Update last column to ToC sheet
+            mytocws.last_col = ToCitem.last_col
             # Add worksheets settings
             for myws in self.wsheets:
                 myws.settings()
@@ -527,6 +531,8 @@ class ToCitem():
     toc_rows = []
     formats = None
     headers = ['TABLE', 'BASE', 'WBASE', 'COUNTS', 'PRCNTS', 'STATS', 'ROW', 'LABEL']
+    last_col = None
+
     def __init__(self, table):
         l_range = Range((ToCitem.row_ind, 0), f'# {table.label}', ToCitem.formats[0])
         b_range = Range((ToCitem.row_ind, 1), table.base, ToCitem.formats[0])
@@ -580,21 +586,27 @@ class ToCitem():
         drop_cols = [v for k,v in mapper.items() if k not in ToCitem.sheets]
         if not any([tup[1].value for row in ToCitem.toc_rows for tup in row if tup[0] == 'WBASE']):
             drop_cols.append('WBASE')
-        ToCitem.filter_row_items(drop_cols, keep=False)
-        header_ranges = [Range((0,i), h, ToCitem.formats[-3]) for i,h in enumerate(ToCitem.headers)]
-        rows_ranges = [tup[1] for row in ToCitem.toc_rows for tup in row]
+        filtered_headers, filtered_toc_rows = ToCitem.filter_row_items(drop_cols, keep=False)
+        header_ranges = [Range((0,i), h, ToCitem.formats[-3]) for i,h in enumerate(filtered_headers)]
+        rows_ranges = [tup[1] for row in filtered_toc_rows for tup in row]
         return header_ranges + rows_ranges
     
     def filter_row_items(header_list, keep=True):
-        if keep:
-            keep_mask = [c in header_list for c in ToCitem.headers]
-        else:
-            keep_mask = [c not in header_list for c in ToCitem.headers]
-        ToCitem.headers = list(compress(ToCitem.headers, keep_mask))
-        ToCitem.toc_rows = [list(compress(row, keep_mask)) for row in ToCitem.toc_rows]
-        for row in ToCitem.toc_rows:
-            for i,r in enumerate(row):
-                r[1].shift(cols=i-r[1].last_col_ind())
+        # if keep:
+        #     keep_mask = [c in header_list for c in ToCitem.headers]
+        # else:
+        #     keep_mask = [c not in header_list for c in ToCitem.headers]
+        # filtered_headers = list(compress(ToCitem.headers, keep_mask))
+        # filtered_toc_rows = [list(compress(row, keep_mask)) for row in ToCitem.toc_rows]
+
+        filtered_headers = header_list if keep else [c for c in ToCitem.headers if c not in header_list]
+        filtered_toc_rows = [[c for c in row if c[0] in filtered_headers] for row in ToCitem.toc_rows]
+        if filtered_headers != ToCitem.headers:
+            for row in filtered_toc_rows:
+                for i,r in enumerate(row):
+                    r[1].shift(cols=i-r[1].last_col_ind())
+        ToCitem.last_col = len(filtered_headers)
+        return filtered_headers, filtered_toc_rows
 
 #############################################################################################################
 #############################################################################################################
