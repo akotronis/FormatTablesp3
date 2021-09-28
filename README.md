@@ -14,9 +14,9 @@ The table of contents has hyperlinks to navigate to each table on each of the ab
 The counts, percentages and statistics sheets contain
 
 - hyperlinks back to table of contents,
-- hyperlinks to coresponding tables on the other sheets,
+- hyperlinks to corresponding tables on the other sheets,
 - hyperlinks to the next and previous tables on the same sheet and
-- The cells with statistical important differences are colored accordingly and have hyperlinks to the coresponding cells of the stats sheet
+- The cells with statistical important differences are colored accordingly and have hyperlinks to the corresponding cells of the stats sheet
 
 ## Gui
 
