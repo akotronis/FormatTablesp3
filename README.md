@@ -17,9 +17,6 @@ The counts, percentages and statistics sheets contain
 - hyperlinks to coresponding tables on the other sheets,
 - hyperlinks to the next and previous tables on the same sheet and
 - The cells with statistical important differences are colored accordingly and have hyperlinks to the coresponding cells of the stats sheet
-
-The application is connected to a gui through which the user can select the input .csv files and define settings for the output excel file (see below)
-
-<p style="text-align:center;">
+<p style="text-align:center">
 ![](gui.jpg)
 </p>
