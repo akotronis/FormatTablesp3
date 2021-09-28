@@ -592,13 +592,6 @@ class ToCitem():
         return header_ranges + rows_ranges
     
     def filter_row_items(header_list, keep=True):
-        # if keep:
-        #     keep_mask = [c in header_list for c in ToCitem.headers]
-        # else:
-        #     keep_mask = [c not in header_list for c in ToCitem.headers]
-        # filtered_headers = list(compress(ToCitem.headers, keep_mask))
-        # filtered_toc_rows = [list(compress(row, keep_mask)) for row in ToCitem.toc_rows]
-
         filtered_headers = header_list if keep else [c for c in ToCitem.headers if c not in header_list]
         filtered_toc_rows = [[c for c in row if c[0] in filtered_headers] for row in ToCitem.toc_rows]
         if filtered_headers != ToCitem.headers:
