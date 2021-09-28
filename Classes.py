@@ -463,6 +463,7 @@ class Worksheet(MakeFile):
             self.ws.freeze_panes(1, 1)
             self.ws.set_column(0, 0, 15)
             self.ws.set_column(1, self.last_col, 13)
+            print(self.last_col)
             self.ws.autofilter(f"A1:{chr(ord('@')+self.last_col)}1")
         else:
             self.ws.freeze_panes(1, 1 + self.DESC_COL)

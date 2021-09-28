@@ -17,6 +17,25 @@ The counts, percentages and statistics sheets contain
 - hyperlinks to coresponding tables on the other sheets,
 - hyperlinks to the next and previous tables on the same sheet and
 - The cells with statistical important differences are colored accordingly and have hyperlinks to the coresponding cells of the stats sheet
-<p style="text-align:center">
+
+## Gui
+
 ![](gui.jpg)
-</p>
+
+## Input files
+
+![](input.jpg)
+
+## Output
+
+#### Table of Contents
+
+![](ToC.jpg)
+
+#### Counts sheet
+
+![](counts.jpg)
+
+#### Stats sheet
+
+![](stats.jpg)
