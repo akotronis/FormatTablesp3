@@ -1,9 +1,10 @@
-import xlsxwriter
-import os
+
 import csv
 import string
-from itertools import compress
-from Functions import *
+import os
+import xlsxwriter
+from functions import *
+
 
 class MakeFile():
 
@@ -68,16 +69,29 @@ class MakeFile():
                 has_stats = InputFile.has_diff_lines
                 if input_file.has_table_footers():
                     input_file.rows = input_file.remove_table_footers(input_file.rows)
+                if input_file.is_counts and input_file.is_percentages:
+                    counts = InputFile(rows=input_file.remove_percentages_lines(input_file.rows))
+                    percentages = InputFile(rows=input_file.remove_counts_lines(input_file.rows))
+                    output['counts'] = counts
+                    output['percentages'] = percentages
                 if i < 1:
                     if has_stats:
-                        stats_file = InputFile(rows=input_file.keep_diff_lines(input_file.rows))
+                        if input_file.is_counts and input_file.is_percentages:
+                            stats_file = InputFile(rows=counts.keep_diff_lines(counts.rows))
+                        else:
+                            stats_file = InputFile(rows=input_file.keep_diff_lines(input_file.rows))
                         output['stats'] = stats_file
                 if has_stats:
-                    input_file.rows = input_file.remove_diff_lines(input_file.rows)
-                if input_file.is_counts():
-                    output['counts'] = input_file
-                elif input_file.is_percentages():
-                    output['percentages'] = input_file
+                    if input_file.is_counts and input_file.is_percentages:
+                        output['counts'].rows = output['counts'].remove_diff_lines(output['counts'].rows)
+                        output['percentages'].rows = output['percentages'].remove_diff_lines(output['percentages'].rows)
+                    else:
+                        input_file.rows = input_file.remove_diff_lines(input_file.rows)
+                if not (input_file.is_counts and input_file.is_percentages):
+                    if input_file.is_counts:
+                        output['counts'] = input_file
+                    elif input_file.is_percentages:
+                        output['percentages'] = input_file
         # Update worksheet names
         self.wsheetnames = output.keys()
         # Output message if worksheet is missing or not.
@@ -345,104 +359,9 @@ class MakeFile():
                     self.output(f"'{missing}' sheet is missing. Was this on purpose?")
                 else:
                     self.output(f'Tables are ready!')
-            
-#############################################################################################################
-#############################################################################################################
 
-class InputFile():
-    has_diff_lines = None
-
-    def __init__(self, filename=None, rows=[]):
-        '''filename is expected to be a full path'''
-        self.filename = filename
-        self.isqps = False
-        self.dlm = None
-        self.quotchar = None
-        # List of lists with the imported file rows
-        self.rows = rows
-
-    def isqps_dlm_quotchar(self):
-        if not self.filename.endswith('.csv'):
-            return
-        try:
-            with open(self.filename) as f:
-                first_line = f.readline().strip()
-                last_char = first_line[-1]
-                quotchar = last_char if last_char in string.punctuation else ''
-                if not 'QPS' in first_line:
-                    return
-                else:
-                    search_str = f'{quotchar}BE{quotchar}'
-                    dlm_ind = first_line.find(search_str) + len(search_str)
-                    dlm = first_line[dlm_ind]
-                    self.isqps, self.dlm, self.quotchar = True, dlm, quotchar
-        except:
-            return
-
-    def import_file(self):
-        self.isqps_dlm_quotchar()
-        if all([self.isqps, self.dlm is not None, self.quotchar is not None]):
-            try:
-                with open(self.filename, newline='') as f:
-                    self.rows = list(csv.reader(f, delimiter=self.dlm, quotechar=self.quotchar))
-                    InputFile.has_diff_lines = self._has_diff_lines()
-                return True
-            except:
-                return False
-        return False
-
-    def is_counts(self):
-        return has_row_label('RW', self.rows)
-
-    def is_percentages(self):
-        return has_row_label('PV', self.rows)
-
-    def has_table_footers(self):
-        return has_row_label('FT', self.rows)
-
-    def remove_table_footers(self, rows):
-        return [row for row in rows if row[0] != 'FT']
-
-    def _has_diff_lines(self):
-        return has_row_label('MK', self.rows, lookupto=20)
-
-    def has_weights(self):
-        return has_row_label('RU', self.rows, lookupto=20)
-
-    def remove_diff_lines(self, rows):
-        output = [row for row in rows if row[0] != 'MK']
-        return output
-
-    def keep_diff_lines(self, rows):
-        output = []
-        for i, row in enumerate(rows):
-            new_row = row[:]
-            if not (i < len(rows) - 1 and rows[i+1][0] == 'MK'):
-                if row[0] == 'MK':
-                    new_row[0], new_row[1] = rows[i-1][0], rows[i-1][1]
-                output.append(new_row)
-        return output
-
-    def split_to_parts(self):
-        '''Input is expected to be the lines of the QPSMR output file as a list of lists
-           Returns a tuple (title, tables) where:
-           title = a list with the tables title (like ['JF';'TABLES TITLE'])
-           tables = a list of tables where table is a list of lists/rows
-        '''
-        title = rows_from_label('JF', self.rows, lookupto=4)[0]
-        tables, table = [], []
-        for row in self.rows:
-            if row[0] in ['TB', 'EN']:
-                if table:
-                    table = table[:-1] if table[-1][0] == 'TE' else table
-                    tables.append(table)
-                table = []
-            if row[0] == 'TB' or table:
-                table.append(row)
-        return title, tables
-
-#############################################################################################################
-#############################################################################################################
+######################################################################################################
+######################################################################################################
 
 class Worksheet(MakeFile):
     
@@ -463,7 +382,6 @@ class Worksheet(MakeFile):
             self.ws.freeze_panes(1, 1)
             self.ws.set_column(0, 0, 15)
             self.ws.set_column(1, self.last_col, 13)
-            print(self.last_col)
             self.ws.autofilter(f"A1:{chr(ord('@')+self.last_col)}1")
         else:
             self.ws.freeze_panes(1, 1 + self.DESC_COL)
@@ -520,8 +438,122 @@ class Worksheet(MakeFile):
         for rng in range_list:
             self.write_range(rng)
 
-#############################################################################################################
-#############################################################################################################
+######################################################################################################
+######################################################################################################
+
+class InputFile():
+    has_diff_lines = None
+
+    def __init__(self, filename=None, rows=[]):
+        '''filename is expected to be a full path'''
+        self.filename = filename
+        self.isqps = False
+        self.dlm = None
+        self.quotchar = None
+        # List of lists with the imported file rows
+        self.rows = rows
+        self.is_counts = None
+        self.is_percentages = None
+
+    def isqps_dlm_quotchar(self):
+        if not self.filename.endswith('.csv'):
+            return
+        try:
+            with open(self.filename) as f:
+                first_line = f.readline().strip()
+                last_char = first_line[-1]
+                quotchar = last_char if last_char in string.punctuation else ''
+                if not 'QPS' in first_line:
+                    return
+                else:
+                    search_str = f'{quotchar}BE{quotchar}'
+                    dlm_ind = first_line.find(search_str) + len(search_str)
+                    dlm = first_line[dlm_ind]
+                    self.isqps, self.dlm, self.quotchar = True, dlm, quotchar
+        except:
+            return
+
+    def import_file(self):
+        self.isqps_dlm_quotchar()
+        if all([self.isqps, self.dlm is not None, self.quotchar is not None]):
+            try:
+                with open(self.filename, newline='') as f:
+                    self.rows = list(csv.reader(f, delimiter=self.dlm, quotechar=self.quotchar))
+                    InputFile.has_diff_lines = self._has_diff_lines()
+                    self.is_counts = self._is_counts()
+                    self.is_percentages = self._is_percentages()
+                return True
+            except:
+                return False
+        return False
+
+    def _is_counts(self):
+        return has_row_label('RW', self.rows)
+
+    def _is_percentages(self):
+        return has_row_label('PV', self.rows)
+
+    def has_table_footers(self):
+        return has_row_label('FT', self.rows)
+
+    def remove_table_footers(self, rows):
+        return [row for row in rows if row[0] != 'FT']
+
+    def _has_diff_lines(self):
+        return has_row_label('MK', self.rows, lookupto=20)
+
+    def has_weights(self):
+        return has_row_label('RU', self.rows, lookupto=20)
+
+    def remove_diff_lines(self, rows):
+        output = [row for row in rows if row[0] != 'MK']
+        return output
+
+    def remove_counts_lines(self, rows):
+        output = []
+        for i, row in enumerate(rows):
+            if row[0] == 'PV':
+                new_row = row[:]
+                new_row[1] = rows[i-1][1]
+                output.append(new_row)
+            elif row[0] != 'RW':
+                output.append(row)
+        return output
+
+    def remove_percentages_lines(self, rows):
+        output = [row for row in rows if row[0] != 'PV']
+        return output
+
+    def keep_diff_lines(self, rows):
+        output = []
+        for i, row in enumerate(rows):
+            new_row = row[:]
+            if not (i < len(rows) - 1 and rows[i+1][0] == 'MK'):
+                if row[0] == 'MK':
+                    new_row[0], new_row[1] = rows[i-1][0], rows[i-1][1]
+                output.append(new_row)
+        return output
+
+    def split_to_parts(self):
+        '''Input is expected to be the lines of the QPSMR output file as a list of lists
+           Returns a tuple (title, tables) where:
+           title = a list with the tables title (like ['JF';'TABLES TITLE'])
+           tables = a list of tables where table is a list of lists/rows
+        '''
+        title = rows_from_label('JF', self.rows, lookupto=4)[0]
+        tables, table = [], []
+        for row in self.rows:
+            if row[0] in ['TB', 'EN']:
+                if table:
+                    table = table[:-1] if table[-1][0] == 'TE' else table
+                    tables.append(table)
+                table = []
+            if row[0] == 'TB' or table:
+                table.append(row)
+        return title, tables
+
+######################################################################################################
+######################################################################################################
 
 class ToCitem():
     # row index on ToC sheet to write
@@ -602,8 +634,8 @@ class ToCitem():
         ToCitem.last_col = len(filtered_headers)
         return filtered_headers, filtered_toc_rows
 
-#############################################################################################################
-#############################################################################################################
+######################################################################################################
+######################################################################################################
 
 class Table(InputFile, Worksheet, ToCitem):
     # Counter to create table aa every time a table instance is created, taking into account the number of sheets
@@ -887,8 +919,8 @@ class Table(InputFile, Worksheet, ToCitem):
         ranges_dict['row_ranges'] = self.row_ranges()
         return ranges_dict
 
-#############################################################################################################
-#############################################################################################################
+######################################################################################################
+######################################################################################################
 
 class Range():
     '''A single cell or a merged range of cells'''

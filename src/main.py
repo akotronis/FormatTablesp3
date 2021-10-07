@@ -2,8 +2,9 @@
 import sys
 import datetime
 from PyQt4 import QtGui
-from FormatTablesp3_ui import Ui_Form
-from Classes import * 
+from format_tables_p3_ui import Ui_Form
+from classes import MakeFile
+from functions import * 
 
 
 ######################### Expired Date ################################
@@ -25,7 +26,7 @@ class MyForm(QtGui.QMainWindow):
         self.exported_filname = 'Formatted_Tables'
 
         # Connect button to get file function
-        self.ui.tblFiles.clicked.connect(self.getfile)
+        self.ui.tblFiles.clicked.connect(self.get_file)
 
     def print_output(self, outp):
         self.ui.outputLabel.clear()
@@ -34,7 +35,7 @@ class MyForm(QtGui.QMainWindow):
         self.ui.outputLabel.setText(outp)
         QtGui.QApplication.processEvents()
 
-    def getfile(self):
+    def get_file(self):
         ########### OPTIONS ###########
         DESC_COL = self.ui.DESC_COL.isChecked()
         ALTERNATE_CLR = self.ui.ALTERNATE_CLR.isChecked()

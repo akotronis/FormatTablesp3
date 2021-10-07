@@ -1,12 +1,14 @@
 # FormatTablesp3
 
-This applications takes as input one or two files which are the outputs, in csv format, of QPSMR tabulation software (one file for counts and one file for percentages).
+This applications takes as input the output file(s) of QPSMR tabulation software, in csv format, and creates a single excel file with the combined contents of the input file(s).
 
-It creates an excel file with seperate table sheets for
+The input file(s) may be a single csv file (counts only, percentages only or counts and percentages together) or two files (one for counts and one for percentages)
+
+The excel file that is created has seperate table sheets for
 
 - counts,
 - percentages,
-- the statistical important differences, if present and
+- the statistical important differences, if present in the input file(s) and
 - table of contents
 
 The table of contents has hyperlinks to navigate to each table on each of the above sheets
@@ -20,21 +22,27 @@ The counts, percentages and statistics sheets contain
 
 ## Gui
 
-![](gui.jpg)
+![](resources/gui.jpg)
 
 ## Input files
 
-![](input.jpg)
+#### Separate files (one for counts and one for percentages)
+
+![](resources/input1.jpg)
+
+#### Single file with both counts and percentages
+
+![](resources/input2.jpg)
 
 ## Output
 
 #### Table of Contents
 
-![](ToC.jpg)
+![](resources/ToC.jpg)
 
 #### Counts sheet
 
-![](counts.jpg)
+![](resources/counts.jpg)
 
 #### Stats sheet
 
