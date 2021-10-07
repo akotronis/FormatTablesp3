@@ -46,4 +46,4 @@ The counts, percentages and statistics sheets contain
 
 #### Stats sheet
 
-![](stats.jpg)
+![](resources/stats.jpg)
