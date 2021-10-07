@@ -35,16 +35,18 @@ class MakeFile():
         MakeFile.output = kwargs.get('output')
         
     def output_file_name(self, extension='xlsx'):
+        '''- If there exists a file with name 'self.output_name', search for files like self.output_name_1, self.output_name_2, etc
+             find maximum _ind if exists and,
+           - if exists, new filename=self.output_name_(max_ind+1), 
+           - if it doesn't, new filename=self.output_name_1, 
+           - If not, new filename=self.output_name
+        '''
         try:
             main_file_name = self.output_name
             folder = os.path.split(self.file_paths[0])[0]
             # Get existing folder files of specified extension, without the extension
             existing_files_of_extension_no_ext = [os.path.splitext(fl)[0] for fl in os.listdir(folder) if fl.endswith(f'.{extension}')]
-            # - If there exists a file with name 'main_file_name', search for files like main_file_name_1, main_file_name_2, etc
-            #   find maximum _ind if exists and,
-            #   - if exists, new filename=main_file_name_(max_ind+1), 
-            #   - if it doesn't, new filename=main_file_name_1, 
-            # - If not, new filename=main_file_name
+
             if main_file_name in existing_files_of_extension_no_ext:
                 tbl_files_inds = [int(fl.split('_')[-1]) for fl in existing_files_of_extension_no_ext if main_file_name == '_'.join(fl.split('_')[:-1]) and fl.split('_')[-1].isdigit()]
                 if tbl_files_inds:
