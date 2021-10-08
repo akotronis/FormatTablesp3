@@ -8,7 +8,7 @@ The excel file that is created has seperate table sheets for
 
 - counts,
 - percentages,
-- the statistical important differences, if present in the input file(s) and
+- the statistical significance, if present in the input file(s) and
 - table of contents
 
 The table of contents has hyperlinks to navigate to each table on each of the above sheets
@@ -18,7 +18,7 @@ The counts, percentages and statistics sheets contain
 - hyperlinks back to table of contents,
 - hyperlinks to corresponding tables on the other sheets,
 - hyperlinks to the next and previous tables on the same sheet and
-- The cells with statistical important differences are colored accordingly and have hyperlinks to the corresponding cells of the stats sheet
+- the cells with statistical significance are colored accordingly and have hyperlinks to the corresponding cells of the stats sheet
 
 ## Gui
 
