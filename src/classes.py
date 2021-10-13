@@ -342,8 +342,9 @@ class MakeFile():
                 myws = self.get_ws(ws_name)
                 myws.write_range(Range((0, 1 * self.DESC_COL), f'HRH TABLES\n{title[0]}',formats[9]))
                 myws.current_row += 2
-            # Initialize table counter
+            # Initialize table counter, table_info_dict
             Table.counter = 0
+            Table.table_info_dict = {}
             # Write worksheet tables and make ToCitems
             table_lines = transformed_input_files[1:]
             for i, line in enumerate(table_lines):
