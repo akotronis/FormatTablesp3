@@ -905,7 +905,7 @@ class Table(InputFile, Worksheet, ToCitem):
                     if label == 'RS':
                         value = str(round(float(value), 2)).replace('.',',')
                     else:
-                        value = str(int(float(value)))
+                        value = str(round(float(value)))
                     url = url_from_sheet_range('stats', cell)
                 ranges.append(Range(cell, value, format, url=url))
             # Set value for odd-even table main row (RW or PV))
