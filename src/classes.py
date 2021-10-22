@@ -842,7 +842,8 @@ class Table(InputFile, Worksheet, ToCitem):
         ranges = []
         rows = self.rows['other_rows']
         line_is_odd = True
-        for row in rows:
+        for _row in rows:
+            row = _row[:]
             label = row[0]
             if self.DESC_COL:
                 ranges.append(Range((self.current_row, 0), label, self.formats[0]))
