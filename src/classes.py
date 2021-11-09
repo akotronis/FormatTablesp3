@@ -694,7 +694,7 @@ class Table(InputFile, Worksheet, ToCitem):
         column_header_rows, other_rows = self.rows['column_header_rows'], self.rows['other_rows']
         # Only if we have the usual banner, not the pseudobanner.
         # We identify the usual banner by the existance of 'TOTAL' as first column header... The only way
-        if rows_from_label('CL', column_header_rows)[0][1] == 'TOTAL':
+        if rows_from_label('CL', column_header_rows)[0][1] in ['TOTAL', 'ΣΥΝΟΛΟ']:
             if has_row_label('RU', other_rows, lookupto=3):
                 base = rows_from_label('RU', other_rows, lookupto=3)[0][1]
                 wbase = rows_from_label('RT', other_rows, lookupto=3)[0][1]
