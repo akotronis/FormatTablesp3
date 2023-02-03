@@ -400,30 +400,36 @@ class InputFile():
         self.rows = rows
         self.is_counts = None
         self.is_percentages = None
+        self.encoding = None
 
     def isqps_dlm_quotchar(self):
         if not self.filename.endswith('.csv'):
             return
         try:
-            with open(self.filename) as f:
+            with open(self.filename, encoding='utf-8-sig') as f:
                 first_line = f.readline().strip()
-                last_char = first_line[-1]
-                quotchar = last_char if last_char in string.punctuation else ''
-                if not 'QPS' in first_line:
-                    return
-                else:
-                    search_str = f'{quotchar}BE{quotchar}'
-                    dlm_ind = first_line.find(search_str) + len(search_str)
-                    dlm = first_line[dlm_ind]
-                    self.isqps, self.dlm, self.quotchar = True, dlm, quotchar
+                self.encoding = 'utf-8-sig'
         except:
+            try:
+                with open(self.filename) as f:
+                    first_line = f.readline().strip()
+            except:
+                return
+        last_char = first_line[-1]
+        quotchar = last_char if last_char in string.punctuation else ''
+        if not 'QPS' in first_line:
             return
+        else:
+            search_str = f'{quotchar}BE{quotchar}'
+            dlm_ind = first_line.find(search_str) + len(search_str)
+            dlm = first_line[dlm_ind]
+            self.isqps, self.dlm, self.quotchar = True, dlm, quotchar
 
     def import_file(self):
         self.isqps_dlm_quotchar()
         if all([self.isqps, self.dlm is not None, self.quotchar is not None]):
             try:
-                with open(self.filename, newline='') as f:
+                with open(self.filename, encoding=self.encoding, newline='') as f:
                     self.rows = list(csv.reader(f, delimiter=self.dlm, quotechar=self.quotchar))
                     InputFile.has_diff_lines = self._has_diff_lines()
                     self.is_counts = self._is_counts()
